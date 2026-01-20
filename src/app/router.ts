@@ -1,3 +1,4 @@
+import { parseUrl } from "./http/parseUrl";
 import { routes } from "./routes";
 import { IncomingMessage, ServerResponse } from "http";
 
@@ -7,10 +8,12 @@ interface Route {
 }
 
 export function router(req: IncomingMessage, res: ServerResponse) {
-  const { method, url } = req;
+  const { method } = req;
+
+  const { pathname } = parseUrl(req.url, req.headers.host);
 
   const route = routes.find(
-    (r: Route) => r.method === method && r.path === url,
+    (r: Route) => r.method === method && r.path === pathname,
   );
 
   if (!route) {
