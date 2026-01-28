@@ -16,8 +16,8 @@ export async function router(req: IncomingMessage, res: ServerResponse) {
   const { method } = req;
   const { pathname, query } = parseUrl(req.url, req.headers.host);
 
-  const route = routes.find(
-    (r: Route) => r.method === method && r.path === pathname,
+  const route = (routes as unknown as Route[]).find(
+    (r) => r.method === method && r.path === pathname,
   );
 
   if (!route) {
