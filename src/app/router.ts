@@ -5,7 +5,7 @@ import { withErrorHandling } from "./http/withErrorHandling";
 import type { RequestContext } from "./http/RequestContext";
 import { parseBody } from "./http/parseBody";
 import { matchRoute } from "./http/matchRoute";
-
+import { sendJson, sendNoContent } from "./http/response";
 interface Route {
   method: string;
   path: string;
@@ -21,7 +21,10 @@ export async function router(req: IncomingMessage, res: ServerResponse) {
   const routesList = routes as unknown as Route[];
 
   let matchedRoute: Route | undefined;
-  let match: ReturnType<typeof matchRoute> = { matched: false, params: {} as Record<string, string> };
+  let match: ReturnType<typeof matchRoute> = {
+    matched: false,
+    params: {} as Record<string, string>,
+  };
 
   for (const r of routesList) {
     if (r.method !== method) continue;
@@ -56,6 +59,9 @@ export async function router(req: IncomingMessage, res: ServerResponse) {
     body,
     params: match.params,
     headers: req.headers,
+
+    json: (data: unknown, status = 200) => sendJson(res, data, { status }),
+    noContent: () => sendNoContent(res),
   };
 
   await withErrorHandling(matchedRoute.handler, context);

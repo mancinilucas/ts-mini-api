@@ -10,4 +10,7 @@ export interface RequestContext<TBody = unknown> {
   params?: Record<string, string>;
   headers: IncomingMessage["headers"];
   body?: TBody;
+
+  json: (data: unknown, status?: number) => void;
+  noContent: () => void;
 }
