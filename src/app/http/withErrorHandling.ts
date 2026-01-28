@@ -1,28 +1,24 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { HttpError } from "./HttpError";
-import { sendResponse } from "./sendResponse";
-
-type Handler = (req: IncomingMessage, res: ServerResponse) => unknown;
+import type { RequestContext } from "./RequestContext";
 
 export async function withErrorHandling(
-  handler: Handler,
-  req: IncomingMessage,
-  res: ServerResponse,
+  handler: (context: RequestContext) => Promise<unknown> | unknown,
+  context: RequestContext,
 ) {
   try {
-    await handler(req, res);
-  } catch (error) {
-    if (error instanceof HttpError) {
-      sendResponse(res, error.statusCode, {
-        error: error.message,
-      });
-      return;
-    }
+    const result = await handler(context);
 
+    if (context.res.writableEnded) return;
+
+    context.res.statusCode = 200;
+    context.res.setHeader("Content-Type", "application/json");
+    context.res.end(JSON.stringify(result ?? null));
+  } catch (error) {
     console.error(error);
 
-    sendResponse(res, 500, {
-      error: "Internal Server Error",
-    });
+    if (context.res.writableEnded) return;
+
+    context.res.statusCode = 500;
+    context.res.setHeader("Content-Type", "application/json");
+    context.res.end(JSON.stringify({ error: "Internal Server Error" }));
   }
 }
