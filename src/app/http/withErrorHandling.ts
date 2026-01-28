@@ -1,24 +1,28 @@
 import type { RequestContext } from "./RequestContext";
+import { ValidationError } from "../errors/ValidationError";
 
 export async function withErrorHandling(
   handler: (context: RequestContext) => Promise<unknown> | unknown,
   context: RequestContext,
 ) {
   try {
-    const result = await handler(context);
-
-    if (context.res.writableEnded) return;
-
-    context.res.statusCode = 200;
-    context.res.setHeader("Content-Type", "application/json");
-    context.res.end(JSON.stringify(result ?? null));
+    await handler(context);
   } catch (error) {
-    console.error(error);
-
-    if (context.res.writableEnded) return;
-
-    context.res.statusCode = 500;
-    context.res.setHeader("Content-Type", "application/json");
-    context.res.end(JSON.stringify({ error: "Internal Server Error" }));
+    if (error instanceof ValidationError) {
+      context.json(
+        {
+          error: "Validation Error",
+          details: error.details,
+        },
+        error.statusCode,
+      );
+      return;
+    }
+    context.json(
+      {
+        error: "Internal Server Error",
+      },
+      500,
+    );
   }
 }
