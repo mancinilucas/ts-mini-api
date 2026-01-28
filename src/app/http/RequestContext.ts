@@ -7,6 +7,7 @@ export interface RequestContext<TBody = unknown> {
   method: string;
   pathname: string;
   query: Record<string, string | string[]>;
+  params?: Record<string, string>;
   headers: IncomingMessage["headers"];
   body?: TBody;
 }
