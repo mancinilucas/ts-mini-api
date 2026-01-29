@@ -1,6 +1,7 @@
 import type { RequestContext } from "../http/RequestContext";
 import { validate } from "../validation/validate";
 import { isRequired, isString, minLength } from "../validation/validators";
+import { createUser } from "../services/user.service";
 
 interface CreateUserBody {
   name: string;
@@ -18,11 +19,7 @@ export function createUserHandler(context: RequestContext<CreateUserBody>) {
 
   validate(body.name, [isRequired, isString, minLength(3)]);
 
-  context.json(
-    {
-      id: "123",
-      name: body.name,
-    },
-    201,
-  );
+  const user = createUser(body.name);
+
+  context.json(user, 201);
 }

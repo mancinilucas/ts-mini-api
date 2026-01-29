@@ -1,6 +1,6 @@
 import { homePageHandler } from "../controllers/homePage.controller";
 import { healthCheckHandler } from "../controllers/healthCheck.controller";
-import { getUserByIdHandler } from "../controllers/user.controller";
+import { getUserByIdHandler } from "../controllers/getUserById.controller";
 import { get } from "node:http";
 
 export const routes = [
